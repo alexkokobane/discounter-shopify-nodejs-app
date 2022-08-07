@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "devplus": "npx ts-node src/index.ts babel --watch src/files/react --out-dir src/public --presets react-app/prod",
-    "dev": "npx babel src/files/react --out-dir src/public --presets react-app/prod && nodemon src/index.ts",
+    "dev": "nodemon backend/index.ts",
     "build": "npx tsc",
     "postbuild": "npx ts-node copy",
     "prestart": "npm run build",

@@ -24,7 +24,7 @@ export const handleAppUninstall = async (topic: string, shop: string, webhookReq
 			}
 		)
 	} catch(err: any){
-		return `ERROR: ${err}`
+		return
 	}
 }
 
