@@ -12,5 +12,15 @@ routes.get('/', async (req, res) => {
 	}
 })
 
+routes.get('/billing-plans', async (req, res) => {
+	try{
+		res.send("Here are your billing plans")
+	} catch(err: any){
+		return {
+			"error": "Could not fetch resource."
+		}
+	}
+})
+
 
 export default routes

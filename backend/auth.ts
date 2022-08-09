@@ -1,11 +1,25 @@
 import express, { Request, Response } from 'express'
-import Shopify, { ApiVersion, AuthQuery, SessionInterface } from '@shopify/shopify-api'
+import Shopify, { ApiVersion, 
+	AuthQuery, 
+	SessionInterface 
+} from '@shopify/shopify-api'
 import cors from 'cors'
 import { Shop } from './schemas'
-import { storeCallback, loadCallback, deleteCallback, getShop } from './utils'
+import { storeCallback, 
+	loadCallback, 
+	deleteCallback, 
+	getShop 
+} from './utils'
 import {
 	handleAppUninstall
 } from './webhooks'
+import { 
+	corsMiddleware,
+	loggedInCtx,
+	checkAuth,
+	checkApiAuth
+} from './middlewares'
+
 const auth = express.Router()
 
 const { API_KEY, API_SECRET_KEY, SCOPES, HOST, SHOP } = process.env
@@ -26,9 +40,8 @@ Shopify.Context.initialize({
 });
 
 auth.get('/auth', async (req: Request, res: Response) => {
-	try {
-		const shop = getShop(req)
-		
+	const shop = getShop(req)
+	try {		
 		 let authRoute = await Shopify.Auth.beginAuth(
 				req,
 				res,
@@ -112,9 +125,9 @@ auth.get('/auth/callback', async (req: Request, res: Response) => {
 				'metaDescription': shopData.description
 			})
 			storeShop.save()
-			return res.redirect("/billing/plans")
+			return res.redirect("/billing-plans")
 		}
-		return res.redirect("/billing/plans")		
+		return res.redirect("/billing-plans")		
 	} catch (error) {
 		return res.redirect("/auth/callback/error")  
 	}
@@ -122,6 +135,41 @@ auth.get('/auth/callback', async (req: Request, res: Response) => {
 
 auth.get('/callback/error', async (req, res) => {
 	res.render('pages/oauth-error')
+})
+
+auth.post('/login', loggedInCtx, async (req, res) => {
+	try {
+
+		const url = req.body.shop.replace(/\s+/g, '')
+		const store = await Shop.findOne({shop: url})
+		const plans = ["Freebie", "Appetizer", "Main"]
+		if(store){
+			return plans.includes(store.pricePlan) ? res.status(200).send("/auth?shop="+store.shop) : res.status(401).send("Subscription not found! Reinstall Windfall from the Shopify App Store to continue using it.")
+		}
+
+		const holder: string[] = url.split(".")
+		console.log(holder)
+		if(holder[1] !== "myshopify"){
+			return res.status(401).send("Please use your 'myshopify' url.")
+		} else if(holder[2] !== "com"){
+			return res.status(401).send("Error! The top level domain of every 'myshopify' url is dot com.")
+		}
+
+		return res.status(401).send("Shop not found! Install Windfall from the Shopify App Store.")
+	} catch(err: any) {
+		return res.status(401).send("Error: "+err)
+	}
+})
+
+auth.post('/logout', checkApiAuth, async (req, res) => {
+	try {
+		await Shopify.Utils.deleteCurrentSession(req, res, true)
+		res.send("/")
+	} catch(err: any) {
+		return res.json({
+			"error": err
+		})
+	}
 })
 
 
