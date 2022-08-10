@@ -16,7 +16,7 @@ export const getShop = (req: Request, res?: Response): string => {
 	return shop 
 }
 
-// Custom session storage
+// Custom session storage functions
 interface StringSession {
 	id: string,
 	session: string
@@ -62,4 +62,15 @@ export const deleteCallback = async (id: string): Promise<boolean> => {
 	} catch {
 		return false
 	}
+}
+
+// Generate a discount code
+export const generateDiscountCode = (length: number): string => {
+	let result: string = '';
+	let characters: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	let charactersLength = characters.length;
+	for ( let i = 0; i < length; i++ ) {
+	  	result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
 }

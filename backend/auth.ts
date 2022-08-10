@@ -105,7 +105,6 @@ auth.get('/auth/callback', async (req: Request, res: Response) => {
 				}
 			)
 			const shopData = data.body.data.shop
-			console.log(shopData)
 			const storeShop = new Shop({
 				'shop': session.shop,
 				'name': shopData.name,
@@ -125,9 +124,9 @@ auth.get('/auth/callback', async (req: Request, res: Response) => {
 				'metaDescription': shopData.description
 			})
 			storeShop.save()
-			return res.redirect("/billing-plans")
+			return res.redirect("/billing")
 		}
-		return res.redirect("/billing-plans")		
+		return res.redirect("/")		
 	} catch (error) {
 		return res.redirect("/auth/callback/error")  
 	}
